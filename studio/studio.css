@@ -46,3 +46,21 @@ section select { max-width:100% }
  .store-heading .action,.completion-actions a,#apply,#order { width:100%; text-align:center }
  .completion-actions a { padding:12px }
 }
+
+.preview-frame { margin:18px 0; padding:12px; border:1px dashed #9eafc4; border-radius:16px; background:#f5f7fa }
+.preview-frame>p { color:#425568; font-size:.875rem }
+.preview-frame .cover { margin:0 }
+body.buyer { background:#fcf7f7; color:var(--ink) }
+body.buyer.home { background:#f5f7f1 }
+.buyer .context-bar { background:var(--ink) }
+.buyer .context-bar .mark { background:white; color:var(--ink) }
+.buyer .header-link { color:white; font-size:.92rem }
+.community-shell main { max-width:940px; padding-top:18px }
+.community-location { display:flex; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #d8d0d1; padding-bottom:12px; margin-bottom:20px; font-size:.92rem }
+.community-location a,.community-location strong { color:var(--ink) }
+.buyer h1 { font:500 clamp(36px,5vw,58px)/1.1 Georgia,serif; letter-spacing:-.035em }
+.buyer .action,.buyer #order { background:var(--ink) }
+.buyer section { border-color:#ddd7d4 }
+.buyer .store-heading { margin:12px 0 }
+.buyer .cover { border-radius:22px }
+.workspace .header-link,.context-bar .header-link { color:white }

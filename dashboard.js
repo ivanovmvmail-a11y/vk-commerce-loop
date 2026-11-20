@@ -1,3 +1,4 @@
+import { sellerMenu } from './shared/navigation.js';
 import { catalogs } from './studio/catalog.js';
 import { shops, getClub, progress, fulfillOrder, activateCredit, resetClub } from './shared/club.js';
 
@@ -8,8 +9,6 @@ el('shop').value = shop;
 function render() {
   const state = getClub(shop);
   const { fulfilled, growth, pro, level } = progress(state);
-  el('name').textContent = shops[shop].name;
-  el('category').textContent = shops[shop].category;
   el('level').textContent = level;
   const target = growth ? 5 : 2;
   el('next').textContent = pro ? 'Открыты поддержка интеграций и сотрудничество с авторами' : 'Следующий уровень — ' + (growth ? 'Pro' : 'Growth');
@@ -28,13 +27,17 @@ function render() {
   const current = ['orders', 'results', 'partner'].includes(requested) ? requested : 'club';
   for (const tab of ['club', 'orders', 'results', 'partner']) {
     el(tab + '-panel').hidden = tab !== current;
-    document.querySelector('nav a[href="#' + tab + '"]').setAttribute('aria-current', tab === current ? 'page' : 'false');
   }
+  const titles = { club: 'Обзор клуба', orders: 'Заказы', results: 'Результаты продаж', partner: 'Партнёрство с брендами' };
+  el('name').textContent = titles[current];
+  el('context').textContent = 'Магазин «' + shops[shop].name + '»';
+  document.title = titles[current] + ' · Кабинет продавца';
+  el('menu').innerHTML = sellerMenu(shop, current);
+  el('view-shop').href = './studio/?shop=' + shop + (state.ready ? '#store' : '#edit');
+  el('view-shop').textContent = state.ready ? 'Посмотреть как покупатель' : 'Подготовить сообщество';
   el('templates').textContent = growth ? 'Доступны' : 'С уровня Growth';
   el('credit').disabled = !growth || state.creditActivated;
   el('credit').textContent = state.creditActivated ? 'Кредит активирован' : growth ? 'Активировать кредит' : 'С уровня Growth';
-  el('studio').href = './studio/?shop=' + shop;
-  el('scene').src = './studio/media/' + shop + '-scene.webp';
   const list = el('order-list');
   list.replaceChildren();
   if (!state.orders.length) list.textContent = 'Здесь появится первый заказ из клипа.';

@@ -1,3 +1,4 @@
+import { sellerMenu } from '../shared/navigation.js';
 import { getClub, progress, recordOrder, setReady } from '../shared/club.js';
 import { catalogs, layouts } from './catalog.js';
 const params = new URLSearchParams(location.search);
@@ -37,19 +38,19 @@ function tradeTerms() {
 }
 function editor() {
   const ready = getClub(shop).ready;
-  return `<p class="eyebrow">SHOP STUDIO</p><h1>${data.name}</h1><p>${data.tagline}</p>
+  return `<p class="eyebrow">Магазин «${data.name}» · Shop Studio</p><h1>Студия оформления</h1>
     <section><h2>Готовность к продаже</h2><p>Для запуска нужны цена, описание, вариант товара, остаток и условия покупки.</p><div class="checks"><span>✓ Цена и описание</span><span>✓ Вариант указан</span></div>
     <details ${ready ? '' : 'open'}><summary>${ready ? 'Торговые условия подтверждены · изменить' : 'Завершить проверку ShopReady'}</summary><form id="stock"><label>Доступно, шт. · ${productName(data.products[0])}<input name="stock" type="number" required min="1" max="9999" step="1" value="${Number(saved().stock) || (ready ? 8 : '')}"></label><label>Способ и срок доставки <select name="shipping">${Object.entries(shippingModes).map(([id, label]) => `<option value="${id}" ${shippingMode() === id ? 'selected' : ''}>${label}</option>`).join('')}</select></label><p>Оплата при получении. Заявки на возврат принимает магазин в сообщениях.</p><label><input type="checkbox" name="confirmed" required ${ready ? 'checked' : ''}> Подтверждаю остаток и условия покупки</label><button>Сохранить условия</button></form></details></section>
     <section><h2>Как представить магазин?</h2><label>Пожелание владельца <select id="wish">${data.wishes.map(([label],i)=>`<option value="${i}" ${wish === i ? 'selected':''}>${label}</option>`).join('')}</select></label>
     <h3>Оформление сообщества</h3><div class="choices">${layouts.slice(0,availableLayouts()).map(([label,desc],i)=>`<button data-layout="${i}" aria-pressed="${layout === i}"><b>${label}</b><small>${desc}</small></button>`).join('')}</div>
-    <div id="preview">${cover(layout)}</div><button id="apply" ${ready ? '' : 'disabled'}>Применить и открыть сообщество</button>${ready ? '' : '<p>Для запуска подтвердите остаток и условия покупки в ShopReady.</p>'}</section>
+    <div class="preview-frame"><p>Предпросмотр сообщества</p><div id="preview">${cover(layout)}</div></div><button id="apply" ${ready ? '' : 'disabled'}>Применить и посмотреть как покупатель</button>${ready ? '' : '<p>Для запуска подтвердите остаток и условия покупки в ShopReady.</p>'}</section>
     <section><h2>Что снять для VK Клипов</h2>${data.ideas.map((text,i)=>`<p><b>Идея ${i+1}.</b> ${text}</p>`).join('')}</section>`;
 }
 function storefront() {
   const clip = `<section class="clipcard">${image('scene')}<div><p class="eyebrow">VK КЛИПЫ</p><h2>${data.clip}</h2>${link('clip','Смотреть клип')}</div></section>`;
   const catalog = `<section><h2>${layout === 1 || layout === 3 ? data.collection : 'Каталог'}</h2>${items()}</section>`;
   const lead = layout === 0 ? `<section><h2>Товар в центре образа</h2>${link('product/0','Открыть ' + data.products[0][0].toLowerCase().replace('помада','помаду'))}</section>` : '';
-  return `<a href="#edit">← Вернуться в редактор</a><div class="store-heading"><h1>${data.name}</h1>${link('clip','Смотреть клип с товарами')}</div>${cover(layout)}${lead}${layout === 1 || layout === 3 ? catalog + clip : clip + catalog}`;
+  return `<div class="store-heading"><h1>${data.name}</h1>${link('clip','Смотреть клип с товарами')}</div>${cover(layout)}${lead}${layout === 1 || layout === 3 ? catalog + clip : clip + catalog}<a href="#edit">Вернуться к оформлению в кабинете продавца</a>`;
 }
 function product(i, fromClip) {
   const p = data.products[i];
@@ -69,10 +70,21 @@ function page() {
     case 'product': content=product(i,source==='clip'); break;
     case 'checkout':
       content=`<a href="#product/${i}">← К товару</a><section><p class="eyebrow">ДЕМОЗАКАЗ ВНУТРИ VK</p><h1>Оформление</h1><div class="product"><span><b>${p[0]}</b><small>${p[1]} · 1 шт.</small></span><strong>${price(p[2])}</strong></div>${tradeTerms()}<button id="order">Подтвердить демозаказ</button></section>`; break;
-    case 'done': content=`<section><p class="eyebrow">ДЕМОЗАКАЗ</p><h1>Заказ оформлен</h1><p>${productName(p)} появится в заказах магазина «${data.name}».</p><div class="completion-actions"><a class="action" href="${clubUrl}#orders">Открыть заказ в кабинете</a><a href="#store">Вернуться в сообщество</a></div></section>`; break;
+    case 'done': content=`<section><p class="eyebrow">ДЕМОЗАКАЗ</p><h1>Заказ оформлен</h1><p>${productName(p)} появится в заказах магазина «${data.name}».</p><div class="completion-actions"><a class="action" href="${clubUrl}#orders">Перейти в кабинет продавца к заказу</a><a href="#store">Вернуться в сообщество</a></div></section>`; break;
     default: content=editor();
   }
-  app.innerHTML = content;
+  const stages = {store:'Витрина', clip:'VK Клип', product:'Карточка товара', checkout:'Оформление заказа', done:'Заказ оформлен'};
+  const buyer = Object.hasOwn(stages, route);
+  document.body.classList.toggle('buyer', buyer);
+  document.getElementById('shell').className = buyer ? 'community-shell' : 'workspace';
+  document.getElementById('menu').innerHTML = buyer ? '' : sellerMenu(shop, 'edit', true);
+  document.getElementById('role').textContent = buyer ? 'Вы покупатель' : 'Кабинет продавца';
+  const exit = document.getElementById('club');
+  exit.textContent = buyer ? 'В кабинет продавца' : 'К обзору клуба';
+  exit.href = clubUrl + '#club';
+  document.title = (buyer ? stages[route] + ' · Сообщество «' + data.name + '»' : 'Студия оформления · Кабинет продавца');
+  const locationBar = buyer ? `<div class="community-location"><a href="#store">Сообщество «${data.name}»</a><span aria-hidden="true">/</span><strong>${stages[route]}</strong></div>` : '';
+  app.innerHTML = locationBar + content;
   const stockForm = document.getElementById('stock');
   if (stockForm) stockForm.onsubmit = event => {
     event.preventDefault();
