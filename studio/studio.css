@@ -38,3 +38,11 @@ section select { max-width:100% }
 }
 
 #stock label {display:block;margin:12px 0} #stock input[type=checkbox] {display:inline;width:auto;margin:0 5px 0 0}
+
+.store-heading,.completion-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
+.completion-actions { justify-content:flex-start }
+@media(max-width:640px) {
+ .store-heading,.completion-actions { align-items:stretch; flex-direction:column }
+ .store-heading .action,.completion-actions a,#apply,#order { width:100%; text-align:center }
+ .completion-actions a { padding:12px }
+}

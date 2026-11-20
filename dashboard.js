@@ -25,8 +25,8 @@ function render() {
   el('missing-price').textContent = amounts.includes(undefined) ? 'Для части прежних заказов цена неизвестна. В сумму включены товары с известной ценой.' : '';
   el('economy').textContent = state.creditActivated ? 'Кредит активирован. При использовании 500 ₽ кредита собственные расходы на такую кампанию составят 500 ₽.' : growth ? 'Доступен кредит 500 ₽. Его можно активировать в кабинете.' : 'На уровне Start магазин покрывает весь бюджет кампании. С Growth часть бюджета можно покрыть кредитом.';
   const requested = location.hash.slice(1);
-  const current = ['results', 'partner'].includes(requested) ? requested : 'club';
-  for (const tab of ['club', 'results', 'partner']) {
+  const current = ['orders', 'results', 'partner'].includes(requested) ? requested : 'club';
+  for (const tab of ['club', 'orders', 'results', 'partner']) {
     el(tab + '-panel').hidden = tab !== current;
     document.querySelector('nav a[href="#' + tab + '"]').setAttribute('aria-current', tab === current ? 'page' : 'false');
   }
@@ -35,8 +35,7 @@ function render() {
   el('credit').textContent = state.creditActivated ? 'Кредит активирован' : growth ? 'Активировать кредит' : 'С уровня Growth';
   el('studio').href = './studio/?shop=' + shop;
   el('scene').src = './studio/media/' + shop + '-scene.webp';
-  el('brief').textContent = shop === 'beauty' ? 'Соберите витрину вокруг готового макияжа.' : 'Покажите текстиль в уютном интерьере.';
-  const list = el('orders');
+  const list = el('order-list');
   list.replaceChildren();
   if (!state.orders.length) list.textContent = 'Здесь появится первый заказ из клипа.';
   for (const order of state.orders) {
@@ -54,8 +53,14 @@ function render() {
       button.textContent = 'Подтвердить выполнение';
       button.onclick = () => {
         fulfillOrder(shop, order.id);
-        el('notice').textContent = progress(getClub(shop)).growth && !growth ? 'Уровень Growth открыт. Доступны новые привилегии.' : 'Выполнение подтверждено.';
-        el('credit').disabled ? el('orders').scrollIntoView({ block: 'nearest' }) : el('credit').focus();
+        const updated = progress(getClub(shop));
+        el('order-feedback').textContent = updated.level !== level ? 'Выполнение подтверждено. Открыт уровень ' + updated.level + '.' : 'Выполнение подтверждено.';
+        const next = el('order-next');
+        const creditAvailable = updated.growth && !getClub(shop).creditActivated;
+        next.href = creditAvailable ? '#privileges' : '#results';
+        next.textContent = creditAvailable ? 'Перейти к рекламному кредиту' : 'Посмотреть результаты продаж';
+        next.hidden = false;
+        el('order-feedback').focus();
       };
       row.append(button);
     }
@@ -68,12 +73,17 @@ el('shop').onchange = event => {
   url.searchParams.set('shop', shop);
   history.replaceState(null, '', url);
   el('notice').textContent = '';
+  el('order-feedback').textContent = '';
+  el('order-next').hidden = true;
   render();
 };
 el('credit').onclick = () => { activateCredit(shop); el('notice').textContent = 'Кредит активирован для демомагазина.'; };
-el('reset').onclick = () => { if (confirm('Вернуть оформление, заказы и привилегии этого демомагазина в начальное состояние?')) { localStorage.removeItem('studio-v1/' + shop); resetClub(shop); el('notice').textContent = 'Начальное состояние восстановлено.'; } };
+el('reset').onclick = () => { if (confirm('Вернуть оформление, заказы и привилегии этого демомагазина в начальное состояние?')) { localStorage.removeItem('studio-v1/' + shop); resetClub(shop); el('order-feedback').textContent = ''; el('order-next').hidden = true; el('notice').textContent = 'Начальное состояние восстановлено.'; } };
 window.addEventListener('club-change', render);
-window.addEventListener('hashchange', render);
+window.addEventListener('hashchange', () => {
+  render();
+  if (location.hash === '#privileges') el('credit').focus();
+});
 window.addEventListener('storage', render);
 window.addEventListener('pageshow', render);
 render();
