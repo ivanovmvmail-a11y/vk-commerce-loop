@@ -43,3 +43,11 @@ details[open] summary { margin-bottom: 14px }
 .studio-entry strong { color:#095bbd }
 .studio-entry:hover strong { text-decoration:underline }
 @media(max-width:540px) { .studio-entry { grid-template-columns:1fr } .studio-entry img { height:145px } }
+
+nav { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 }
+nav a { padding:8px 12px; border-radius:9px; color:#124c85 }
+nav a[aria-current=page] { background:#183e70; color:white; text-decoration:none }
+.metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:12px; margin:18px 0 }
+.metrics div { background:#f1f5fa; padding:16px; border-radius:12px }
+.metrics strong { display:block; font-size:1.6rem }
+#partner-panel li { margin:14px 0 }

@@ -36,3 +36,5 @@ section select { max-width:100% }
  section label select { display:block; width:100% }
  .choices button { flex:1 1 120px }
 }
+
+#stock label {display:block;margin:12px 0} #stock input[type=checkbox] {display:inline;width:auto;margin:0 5px 0 0}

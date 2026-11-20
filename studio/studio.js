@@ -25,14 +25,24 @@ function cover(n) {
   const description = [data.products[0][3],intro,data.story,intro][n];
   return `<div class="cover view-${n}">${image(n === 0 || n === 3 ? 'detail' : 'scene')}<div><span class="monogram">${data.initials}</span><p>${data.name} / ${title}</p><h2>${titles[n]}</h2><p>${description}</p></div></div>`;
 }
+const shippingModes = {
+  pickup: 'Пункт выдачи · 2–3 дня · бесплатно',
+  courier: 'Курьер · 1–2 дня · бесплатно'
+};
+function shippingMode() {
+  return Object.hasOwn(shippingModes, saved().shipping) ? saved().shipping : 'pickup';
+}
+function tradeTerms() {
+  return '<p><b>Доставка.</b> ' + shippingModes[shippingMode()] + '</p><p><b>Оплата.</b> При получении, в демо без списания.</p><p><b>Возврат.</b> Обращение через сообщения магазина по номеру заказа.</p>';
+}
 function editor() {
   const ready = getClub(shop).ready;
   return `<p class="eyebrow">SHOP STUDIO</p><h1>${data.name}</h1><p>${data.tagline}</p>
-    <section><h2>Готовность к продаже</h2><p>ShopReady проверяет каталог перед запуском.</p><div class="checks"><span>✓ Цена и описание</span><span>✓ Варианты товаров</span><span>✓ Доставка и оформление</span></div>
-    ${ready ? `<strong>✓ Остатки подтверждены</strong>` : `<form id="stock"><label>Остаток · ${data.products[0][0]}, ${data.products[0][1]}<input name="stock" type="number" required min="1" max="9999" step="1" inputmode="numeric" placeholder="Количество, шт."></label><button>Сохранить остаток</button></form>`}</section>
+    <section><h2>Готовность к продаже</h2><p>Для запуска нужны цена, описание, вариант товара, остаток и условия покупки.</p><div class="checks"><span>✓ Цена и описание</span><span>✓ Вариант указан</span></div>
+    <details ${ready ? '' : 'open'}><summary>${ready ? 'Торговые условия подтверждены · изменить' : 'Завершить проверку ShopReady'}</summary><form id="stock"><label>Доступно, шт. · ${productName(data.products[0])}<input name="stock" type="number" required min="1" max="9999" step="1" value="${Number(saved().stock) || (ready ? 8 : '')}"></label><label>Способ и срок доставки <select name="shipping">${Object.entries(shippingModes).map(([id, label]) => `<option value="${id}" ${shippingMode() === id ? 'selected' : ''}>${label}</option>`).join('')}</select></label><p>Оплата при получении. Заявки на возврат принимает магазин в сообщениях.</p><label><input type="checkbox" name="confirmed" required ${ready ? 'checked' : ''}> Подтверждаю остаток и условия покупки</label><button>Сохранить условия</button></form></details></section>
     <section><h2>Как представить магазин?</h2><label>Пожелание владельца <select id="wish">${data.wishes.map(([label],i)=>`<option value="${i}" ${wish === i ? 'selected':''}>${label}</option>`).join('')}</select></label>
     <h3>Оформление сообщества</h3><div class="choices">${layouts.slice(0,availableLayouts()).map(([label,desc],i)=>`<button data-layout="${i}" aria-pressed="${layout === i}"><b>${label}</b><small>${desc}</small></button>`).join('')}</div>
-    <div id="preview">${cover(layout)}</div><button id="apply" ${ready ? '' : 'disabled'}>Применить оформление</button>${ready ? '' : '<p>Для запуска укажите остаток в ShopReady.</p>'}</section>
+    <div id="preview">${cover(layout)}</div><button id="apply" ${ready ? '' : 'disabled'}>Применить оформление</button>${ready ? '' : '<p>Для запуска подтвердите остаток и условия покупки в ShopReady.</p>'}</section>
     <section><h2>Что снять для VK Клипов</h2>${data.ideas.map((text,i)=>`<p><b>Идея ${i+1}.</b> ${text}</p>`).join('')}</section>`;
 }
 function storefront() {
@@ -58,7 +68,7 @@ function page() {
       content = `<a href="#store">← В сообщество</a><div class="clip"><video controls playsinline preload="metadata" poster="${media('scene')}" aria-label="${data.clip}"><source src="media/${shop}.mp4" type="video/mp4"></video><section><p class="eyebrow">VK КЛИПЫ · ${data.name}</p><h1>${data.clip}</h1><p>${data.wishes[wish][2]}</p><h2>Товары из клипа</h2>${data.products.slice(0,2).map((p,j)=>`<a class="product" href="#product/${j}/clip"><span><b>${p[0]}</b><small>${p[1]}</small></span><strong>${price(p[2])}</strong></a>`).join('')}</section></div>`; break;
     case 'product': content=product(i,source==='clip'); break;
     case 'checkout':
-      content=`<a href="#product/${i}">← К товару</a><section><p class="eyebrow">ДЕМОЗАКАЗ ВНУТРИ VK</p><h1>Оформление</h1><div class="product"><span><b>${p[0]}</b><small>${p[1]} · 1 шт.</small></span><strong>${price(p[2])}</strong></div><p>Доставка в демонстрационный пункт выдачи. Оплата в прототипе не требуется.</p><button id="order">Подтвердить демозаказ</button></section>`; break;
+      content=`<a href="#product/${i}">← К товару</a><section><p class="eyebrow">ДЕМОЗАКАЗ ВНУТРИ VK</p><h1>Оформление</h1><div class="product"><span><b>${p[0]}</b><small>${p[1]} · 1 шт.</small></span><strong>${price(p[2])}</strong></div>${tradeTerms()}<button id="order">Подтвердить демозаказ</button></section>`; break;
     case 'done': content=`<section><p class="eyebrow">ДЕМОЗАКАЗ</p><h1>Заказ оформлен</h1><p>${productName(p)} появится в заказах магазина «${data.name}».</p><a class="action" href="${clubUrl}">Посмотреть в кабинете продавца</a> ${link('store','В сообщество')}</section>`; break;
     default: content=editor();
   }
@@ -66,7 +76,7 @@ function page() {
   const stockForm = document.getElementById('stock');
   if (stockForm) stockForm.onsubmit = event => {
     event.preventDefault();
-    persist({stock:Number(stockForm.elements.stock.value)});
+    persist({stock:Number(stockForm.elements.stock.value), shipping:stockForm.elements.shipping.value});
     setReady(shop,true);
     page();
     document.getElementById('wish').focus();
@@ -82,7 +92,7 @@ function page() {
   const order=document.getElementById('order');
   if (order) {
     const id='VK-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,5);
-    order.onclick=()=>{order.disabled=true; recordOrder(shop,{id,item:productName(p)}); location.replace('#done/'+i);};
+    order.onclick=()=>{order.disabled=true; recordOrder(shop,{id,item:productName(p),amount:p[2]}); location.replace('#done/'+i);};
   }
 }
 window.addEventListener('hashchange',()=>{page(); window.scrollTo(0,0); const title=app.querySelector('h1');if(title){title.tabIndex=-1;title.focus({preventScroll:true});}});

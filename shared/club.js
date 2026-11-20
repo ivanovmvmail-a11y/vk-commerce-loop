@@ -34,13 +34,13 @@ export function setReady(shop, ready) {
 }
 
 // Use the same checkout ID when retrying a single purchase.
-export function recordOrder(shop, { id, item }) {
+export function recordOrder(shop, { id, item, amount }) {
   const state = getClub(shop);
   if (!state.ready) throw new Error('Сначала завершите проверку ShopReady');
   if (typeof id !== 'string' || !id.trim() || typeof item !== 'string' || !item.trim())
     throw new Error('Нужны номер заказа и название варианта товара');
   if (state.orders.some(order => order.id === id)) return;
-  state.orders.unshift({ id, item, status: 'pending' });
+  state.orders.unshift({ id, item, amount, status: 'pending' });
   save(shop, state);
 }
 
@@ -54,7 +54,9 @@ export function fulfillOrder(shop, id) {
 
 export function progress(state) {
   const fulfilled = state.orders.filter(order => order.status === 'fulfilled').length;
-  return { fulfilled, growth: state.ready && fulfilled >= 2 };
+  const growth = state.ready && fulfilled >= 2;
+  const pro = growth && fulfilled >= 5;
+  return { fulfilled, growth, pro, level: pro ? 'Pro' : growth ? 'Growth' : 'Start' };
 }
 
 export function activateCredit(shop) {
