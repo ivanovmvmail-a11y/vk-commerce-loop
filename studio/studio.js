@@ -1,13 +1,13 @@
 import { sellerMenu } from '../shared/navigation.js';
-import { getClub, progress, recordOrder, setReady } from '../shared/club.js';
+import { demoStorage, scopeKey, getClub, progress, recordOrder, setReady } from '../shared/club.js';
 import { catalogs, layouts } from './catalog.js';
 const params = new URLSearchParams(location.search);
 const shop = params.get('shop') === 'home' ? 'home' : 'beauty';
 const data = catalogs[shop];
-const clubUrl = '../index.html?shop=' + shop;
-const key = 'studio-v1/' + shop;
-const saved = () => JSON.parse(localStorage.getItem(key) || '{}');
-const persist = fields => localStorage.setItem(key, JSON.stringify({...saved(), ...fields}));
+const clubUrl = '../cabinet.html?shop=' + shop;
+const key = scopeKey('studio-v1/' + shop);
+const saved = () => JSON.parse(demoStorage.getItem(key) || '{}');
+const persist = fields => demoStorage.setItem(key, JSON.stringify({...saved(), ...fields}));
 const app = document.getElementById('app');
 document.getElementById('club').href = clubUrl;
 document.body.className = shop;

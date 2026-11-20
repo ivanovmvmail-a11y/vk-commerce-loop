@@ -6,7 +6,7 @@ const sections = [
 ];
 
 export function sellerMenu(shop, current, inStudio = false) {
-  const cabinet = (inStudio ? '../index.html' : './index.html') + '?shop=' + shop;
+  const cabinet = (inStudio ? '../cabinet.html' : './cabinet.html') + '?shop=' + shop;
   const studio = (inStudio ? './' : './studio/') + '?shop=' + shop;
   return `<aside class="seller-menu">
     <div class="shop-id"><img src="${inStudio ? '' : './studio/'}media/${shop}-scene.webp" alt=""><div><b>${shops[shop].name}</b><small>${shops[shop].category}</small></div></div>

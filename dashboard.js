@@ -1,6 +1,6 @@
 import { sellerMenu } from './shared/navigation.js';
 import { catalogs } from './studio/catalog.js';
-import { shops, getClub, progress, fulfillOrder, activateCredit, resetClub } from './shared/club.js';
+import { demoStorage, scopeKey, shops, getClub, progress, fulfillOrder, activateCredit, resetClub } from './shared/club.js';
 
 const el = id => document.getElementById(id);
 const requestedShop = new URL(location.href).searchParams.get('shop');
@@ -81,7 +81,7 @@ el('shop').onchange = event => {
   render();
 };
 el('credit').onclick = () => { activateCredit(shop); el('notice').textContent = 'Кредит активирован для демомагазина.'; };
-el('reset').onclick = () => { if (confirm('Вернуть оформление, заказы и привилегии этого демомагазина в начальное состояние?')) { localStorage.removeItem('studio-v1/' + shop); resetClub(shop); el('order-feedback').textContent = ''; el('order-next').hidden = true; el('notice').textContent = 'Начальное состояние восстановлено.'; } };
+el('reset').onclick = () => { if (confirm('Вернуть оформление, заказы и привилегии этого демомагазина в начальное состояние?')) { demoStorage.removeItem(scopeKey('studio-v1/' + shop)); resetClub(shop); el('order-feedback').textContent = ''; el('order-next').hidden = true; el('notice').textContent = 'Начальное состояние восстановлено.'; } };
 window.addEventListener('club-change', render);
 window.addEventListener('hashchange', () => {
   render();

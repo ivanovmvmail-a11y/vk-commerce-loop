@@ -1,3 +1,7 @@
+// The presentation frame identifies isolated examples; ordinary visits keep the original storage.
+export const example = window.frameElement?.dataset.example || '';
+export const demoStorage = example ? sessionStorage : localStorage;
+export const scopeKey = key => example ? 'preview/' + example + '/' + key : key;
 // Shared by the buyer checkout, ShopReady and the seller dashboard.
 export const shops = {
   beauty: { name: 'Тон', category: 'Декоративная косметика', sample: 'Помада · Розовое дерево' },
@@ -6,10 +10,18 @@ export const shops = {
 
 function key(shop) {
   if (!Object.hasOwn(shops, shop)) throw new Error('Неизвестный магазин');
-  return 'vk-commerce-club-v1/' + shop;
+  return scopeKey('vk-commerce-club-v1/' + shop);
 }
 
 function initial(shop) {
+  if (example) {
+    const count = { Start: 0, Growth: 2, Pro: 5 }[example];
+    const orders = Array.from({length: count}, (_, i) => ({
+      id: 'DEMO-' + (1001 + i), item: shops[shop].sample,
+      amount: shop === 'beauty' ? 1490 : 3490, status: 'fulfilled'
+    }));
+    return {ready: true, orders, creditActivated: false};
+  }
   const orders = shop === 'beauty' ? [
     { id: 'VK-1042', item: shops.beauty.sample, status: 'pending' },
     { id: 'VK-1041', item: 'Румяна · Персик', status: 'fulfilled' }
@@ -18,12 +30,12 @@ function initial(shop) {
 }
 
 export function getClub(shop) {
-  const saved = localStorage.getItem(key(shop));
+  const saved = demoStorage.getItem(key(shop));
   return saved ? JSON.parse(saved) : initial(shop);
 }
 
 function save(shop, state) {
-  localStorage.setItem(key(shop), JSON.stringify(state));
+  demoStorage.setItem(key(shop), JSON.stringify(state));
   window.dispatchEvent(new Event('club-change'));
 }
 
@@ -67,6 +79,6 @@ export function activateCredit(shop) {
 }
 
 export function resetClub(shop) {
-  localStorage.removeItem(key(shop));
+  demoStorage.removeItem(key(shop));
   window.dispatchEvent(new Event('club-change'));
 }
