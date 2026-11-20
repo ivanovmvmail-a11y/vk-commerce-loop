@@ -82,3 +82,11 @@ export function resetClub(shop) {
   demoStorage.removeItem(key(shop));
   window.dispatchEvent(new Event('club-change'));
 }
+
+export function reportScreen(shop, route, screen) {
+  if (window.parent === window) return;
+  const state = getClub(shop);
+  const {fulfilled, growth} = progress(state);
+  const credit = state.creditActivated ? 'Активирован' : growth ? 'Доступен · 500 ₽' : 'С уровня Growth';
+  window.parent.postMessage({type:'club-screen', shop, route, screen, fulfilled, ready:state.ready, credit}, location.origin);
+}

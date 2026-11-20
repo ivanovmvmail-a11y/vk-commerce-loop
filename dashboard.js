@@ -1,11 +1,11 @@
 import { sellerMenu } from './shared/navigation.js';
 import { catalogs } from './studio/catalog.js';
-import { demoStorage, scopeKey, shops, getClub, progress, fulfillOrder, activateCredit, resetClub } from './shared/club.js';
+import { demoStorage, scopeKey, shops, reportScreen, getClub, progress, fulfillOrder, activateCredit, resetClub } from './shared/club.js';
 
 const el = id => document.getElementById(id);
 const requestedShop = new URL(location.href).searchParams.get('shop');
-let shop = Object.hasOwn(shops, requestedShop) ? requestedShop : 'beauty';
-el('shop').value = shop;
+const shop = Object.hasOwn(shops, requestedShop) ? requestedShop : 'beauty';
+
 function render() {
   const state = getClub(shop);
   const { fulfilled, growth, pro, level } = progress(state);
@@ -29,6 +29,7 @@ function render() {
     el(tab + '-panel').hidden = tab !== current;
   }
   const titles = { club: 'Обзор клуба', orders: 'Заказы', results: 'Результаты продаж', partner: 'Партнёрство с брендами' };
+  reportScreen(shop, current, titles[current]);
   el('name').textContent = titles[current];
   el('context').textContent = 'Магазин «' + shops[shop].name + '»';
   document.title = titles[current] + ' · Кабинет продавца';
@@ -70,16 +71,6 @@ function render() {
     list.append(row);
   }
 }
-el('shop').onchange = event => {
-  shop = event.target.value;
-  const url = new URL(location.href);
-  url.searchParams.set('shop', shop);
-  history.replaceState(null, '', url);
-  el('notice').textContent = '';
-  el('order-feedback').textContent = '';
-  el('order-next').hidden = true;
-  render();
-};
 el('credit').onclick = () => { activateCredit(shop); el('notice').textContent = 'Кредит активирован для демомагазина.'; };
 el('reset').onclick = () => { if (confirm('Вернуть оформление, заказы и привилегии этого демомагазина в начальное состояние?')) { demoStorage.removeItem(scopeKey('studio-v1/' + shop)); resetClub(shop); el('order-feedback').textContent = ''; el('order-next').hidden = true; el('notice').textContent = 'Начальное состояние восстановлено.'; } };
 window.addEventListener('club-change', render);

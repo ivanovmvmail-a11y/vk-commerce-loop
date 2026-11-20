@@ -1,5 +1,5 @@
 import { sellerMenu } from '../shared/navigation.js';
-import { demoStorage, scopeKey, getClub, progress, recordOrder, setReady } from '../shared/club.js';
+import { demoStorage, scopeKey, reportScreen, getClub, progress, recordOrder, setReady } from '../shared/club.js';
 import { catalogs, layouts } from './catalog.js';
 const params = new URLSearchParams(location.search);
 const shop = params.get('shop') === 'home' ? 'home' : 'beauty';
@@ -75,6 +75,7 @@ function page() {
   }
   const stages = {store:'Витрина', clip:'VK Клип', product:'Карточка товара', checkout:'Оформление заказа', done:'Заказ оформлен'};
   const buyer = Object.hasOwn(stages, route);
+  reportScreen(shop, buyer ? route : 'edit', buyer ? stages[route] : 'Студия оформления');
   document.body.classList.toggle('buyer', buyer);
   document.getElementById('shell').className = buyer ? 'community-shell' : 'workspace';
   document.getElementById('menu').innerHTML = buyer ? '' : sellerMenu(shop, 'edit', true);
